@@ -9,6 +9,8 @@ import {
   DollarSign,
   ShoppingCart,
   Shield,
+  Package,
+  Users,
   LogOut,
   Menu,
   X,
@@ -24,6 +26,9 @@ const menuItems = [
   { name: 'Fuel & Vehicle', href: '/fuel', icon: Fuel },
   { name: 'Petty Cash', href: '/petty-cash', icon: DollarSign },
   { name: 'Sales Orders', href: '/sales', icon: ShoppingCart, requiresSalesAccess: true },
+  { name: 'Orders Tracking', href: '/orders', icon: Package },
+  { name: 'Customers', href: '/customers', icon: Users },
+  { name: 'Products', href: '/products', icon: Package },
   { name: 'Gate Pass', href: '/gate-pass', icon: Shield },
   { name: 'Bulk Upload', href: '/admin/bulk-upload', icon: Upload, adminOnly: true },
 ]

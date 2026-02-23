@@ -16,6 +16,7 @@ import {
   CheckCircle,
   Clock,
   XCircle,
+  Package
 } from 'lucide-react'
 import api from '@/lib/api'
 import { useState } from 'react'
@@ -40,7 +41,7 @@ export default function DashboardPage() {
 
   const fetchStats = async () => {
     try {
-      const [travel, fuel, pettyCash, sales, gatePass] = await Promise.all([
+      const [travel, fuel, pettyCash, sales, gatePass, orders] = await Promise.all([
         api.get('/travel').catch(() => ({ data: [] })),
         api.get('/fuel').catch(() => ({ data: [] })),
         api.get('/petty-cash').catch(() => ({ data: [] })),
@@ -52,6 +53,7 @@ export default function DashboardPage() {
           ? api.get('/sales').catch(() => ({ data: [] }))
           : Promise.resolve({ data: [] }),
         api.get('/gate-pass').catch(() => ({ data: [] })),
+        api.get('/orders/stats/dashboard').catch(() => ({ data: { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, byStep: { step1: 0, step2: 0, step3: 0, step4: 0, step5: 0, step6: 0, step7: 0 } } })),
       ])
 
       const travelData = travel.data || []
@@ -59,6 +61,7 @@ export default function DashboardPage() {
       const pettyCashData = pettyCash.data || []
       const salesData = sales.data || []
       const gatePassData = gatePass.data || []
+      const ordersData = orders.data || {}
 
       setStats({
         travel: {
@@ -86,6 +89,7 @@ export default function DashboardPage() {
           pending: gatePassData.filter((r: any) => r.status === 'pending').length,
           approved: gatePassData.filter((r: any) => r.status === 'approved').length,
         },
+        orders: ordersData
       })
     } catch (error) {
       console.error('Error fetching stats:', error)
@@ -108,6 +112,8 @@ export default function DashboardPage() {
     user.department === 'Inventory' ||
     user.department === 'Finance' ||
     user.permissions?.canAccessSales
+
+  const hasOrdersAccess = true // All users can access orders module
 
   const modules = [
     {
@@ -143,10 +149,17 @@ export default function DashboardPage() {
         ]
       : []),
     {
+      name: 'Orders Tracking',
+      href: '/orders',
+      icon: Package,
+      color: 'bg-indigo-500',
+      stats: stats.orders,
+    },
+    {
       name: 'Gate Pass',
       href: '/gate-pass',
       icon: Shield,
-      color: 'bg-indigo-500',
+      color: 'bg-teal-500',
       stats: stats.gatePass,
     },
   ]

@@ -30,11 +30,20 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // Legacy role field - kept for backward compatibility
   role: {
     type: String,
     enum: ['user', 'administrator'],
     default: 'user',
   },
+  // New roles system - array of role references
+  roles: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Role',
+    },
+  ],
+  // Legacy permissions - kept for backward compatibility
   permissions: {
     canMarkPaid: {
       type: Boolean,
@@ -68,6 +77,48 @@ userSchema.pre('save', async function (next) {
 // Method to compare password
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Method to check if user has a specific role
+userSchema.methods.hasRole = async function (roleNames) {
+  await this.populate('roles');
+  const userRoles = this.roles.map(role => role.name);
+  
+  if (Array.isArray(roleNames)) {
+    return roleNames.some(roleName => userRoles.includes(roleName));
+  }
+  return userRoles.includes(roleNames);
+};
+
+// Method to check if user has a specific permission
+userSchema.methods.hasPermission = async function (permissionNames) {
+  await this.populate({
+    path: 'roles',
+    populate: { path: 'permissions' },
+  });
+  
+  const userPermissions = this.roles
+    .flatMap(role => role.permissions)
+    .map(permission => permission.name);
+  
+  if (Array.isArray(permissionNames)) {
+    return permissionNames.some(permName => userPermissions.includes(permName));
+  }
+  return userPermissions.includes(permissionNames);
+};
+
+// Method to get all permissions from all roles
+userSchema.methods.getAllPermissions = async function () {
+  await this.populate({
+    path: 'roles',
+    populate: { path: 'permissions' },
+  });
+  
+  const permissions = this.roles
+    .flatMap(role => role.permissions)
+    .filter((perm, index, self) => index === self.findIndex(p => p._id.equals(perm._id)));
+  
+  return permissions;
 };
 
 module.exports = mongoose.model('User', userSchema);

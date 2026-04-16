@@ -22,6 +22,7 @@ app.use('/api/petty-cash', require('./routes/pettyCash'));
 app.use('/api/sales', require('./routes/sales'));
 app.use('/api/gate-pass', require('./routes/gatePass'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/roles-permissions', require('./routes/rolesPermissions'));
 
 // Health check
 app.get('/api/health', (req, res) => {

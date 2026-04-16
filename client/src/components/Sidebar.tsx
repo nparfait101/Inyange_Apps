@@ -15,6 +15,7 @@ import {
   Upload,
   Settings,
   User,
+  Lock,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { DarkModeToggle } from './DarkModeToggle'

@@ -48,6 +48,20 @@ const gatePassSchema = new mongoose.Schema({
     default: 'pending',
   },
   rejectionReason: String,
+  // Two-step approval process
+  printedAt: Date,
+  printedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
+  printedByName: String,
+  checkoutApprovedAt: Date,
+  checkoutApprovedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
+  checkoutApprovedByName: String,
+  verificationCode: String,
   createdAt: {
     type: Date,
     default: Date.now,

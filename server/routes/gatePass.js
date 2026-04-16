@@ -131,4 +131,80 @@ router.put('/:id/verify', auth, async (req, res) => {
   }
 });
 
+// @route   PUT /api/gate-pass/:id/print
+// @desc    Record POS print/scan - Step 1 of approval
+// @access  Private
+router.put('/:id/print', auth, async (req, res) => {
+  try {
+    const gatePass = await GatePass.findById(req.params.id);
+
+    if (!gatePass) {
+      return res.status(404).json({ message: 'Gate pass not found' });
+    }
+
+    // Generate verification code if not exists
+    if (!gatePass.verificationCode) {
+      const timestamp = new Date().getTime().toString().slice(-6);
+      const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+      gatePass.verificationCode = `GP-${gatePass._id.toString().slice(-4).toUpperCase()}-${timestamp}-${random}`;
+    }
+
+    gatePass.printedAt = new Date();
+    gatePass.printedBy = req.user._id;
+    gatePass.printedByName = req.user.staffId;
+    gatePass.updatedAt = new Date();
+
+    await gatePass.save();
+
+    res.json({
+      message: 'Gate pass printed and scanned. Ready for checkout approval.',
+      gatePass,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   PUT /api/gate-pass/:id/checkout-approve
+// @desc    Approve and checkout gate pass - Step 2 of approval
+// @access  Private
+router.put('/:id/checkout-approve', auth, async (req, res) => {
+  try {
+    const gatePass = await GatePass.findById(req.params.id);
+
+    if (!gatePass) {
+      return res.status(404).json({ message: 'Gate pass not found' });
+    }
+
+    // Check if document was printed first
+    if (!gatePass.printedAt) {
+      return res.status(400).json({
+        message: 'Gate pass must be printed and scanned first before checkout approval',
+        code: 'PRINT_REQUIRED',
+      });
+    }
+
+    // Mark as approved for checkout
+    gatePass.checkoutApprovedAt = new Date();
+    gatePass.checkoutApprovedBy = req.user._id;
+    gatePass.checkoutApprovedByName = req.user.staffId;
+    gatePass.status = 'approved';
+    gatePass.verifiedBy = req.user._id;
+    gatePass.verifiedByName = req.user.staffId;
+    gatePass.verifiedAt = new Date();
+    gatePass.updatedAt = new Date();
+
+    await gatePass.save();
+
+    res.json({
+      message: 'Gate pass approved and checked out successfully',
+      gatePass,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

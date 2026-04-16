@@ -13,6 +13,8 @@ import {
   Menu,
   X,
   Upload,
+  Settings,
+  User,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { DarkModeToggle } from './DarkModeToggle'
@@ -54,7 +56,7 @@ export function Sidebar() {
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 rounded-lg bg-primary-500 text-white"
+          className="p-2 rounded-lg bg-primary-500 text-white shadow-lg hover:bg-primary-600 transition-colors"
         >
           {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
@@ -62,19 +64,27 @@ export function Sidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-primary-600 text-white transform transition-transform duration-300 ease-in-out z-40 ${
+        className={`fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-primary-700 to-primary-800 text-white transform transition-transform duration-300 ease-in-out z-40 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
+        } lg:translate-x-0 shadow-xl`}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="p-6 border-b border-primary-500">
-            <h1 className="text-2xl font-bold">InyangeApps</h1>
-            <p className="text-sm text-primary-200 mt-1">Request Management</p>
+          {/* Logo Section */}
+          <div className="p-6 border-b border-primary-600/50 bg-primary-800/50">
+            <div className="flex items-center space-x-2 mb-2">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <span className="font-bold text-lg">I</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold tracking-wide">InyangeApps</h1>
+                <p className="text-xs text-primary-200 font-medium">v1.0</p>
+              </div>
+            </div>
+            <p className="text-xs text-primary-300 mt-2">Request Management System</p>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {filteredMenuItems.map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
@@ -83,34 +93,52 @@ export function Sidebar() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
                     isActive
-                      ? 'bg-primary-500 text-white'
-                      : 'text-primary-100 hover:bg-primary-500/50'
+                      ? 'bg-white/15 text-white shadow-md'
+                      : 'text-primary-100 hover:bg-white/10 hover:text-white'
                   }`}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span>{item.name}</span>
+                  <Icon className={`h-5 w-5 transition-transform ${isActive ? 'scale-110' : ''}`} />
+                  <span className="font-medium text-sm">{item.name}</span>
+                  {isActive && <div className="ml-auto w-1 h-6 bg-white rounded-full"></div>}
                 </Link>
               )
             })}
           </nav>
 
           {/* User info and actions */}
-          <div className="p-4 border-t border-primary-500">
-            <div className="mb-4">
-              <p className="text-sm font-semibold">{user?.staffId}</p>
-              <p className="text-xs text-primary-200">{user?.department}</p>
-              <p className="text-xs text-primary-200">{user?.position}</p>
+          <div className="p-4 border-t border-primary-600/50 bg-primary-800/50">
+            {/* User Profile Card */}
+            <div className="mb-4 p-3 bg-primary-700/40 rounded-lg border border-primary-600/30">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-10 h-10 bg-primary-400/30 rounded-full flex items-center justify-center">
+                  <User className="h-6 w-6 text-primary-200" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate">{user?.staffId || 'User'}</p>
+                  <p className="text-xs text-primary-300">{user?.role || 'Staff'}</p>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-primary-200">
+                  <span className="font-medium">Dept:</span> {user?.department || 'N/A'}
+                </p>
+                <p className="text-xs text-primary-200">
+                  <span className="font-medium">Pos:</span> {user?.position || 'N/A'}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center justify-between">
+
+            {/* Actions */}
+            <div className="space-y-2">
               <DarkModeToggle />
               <button
                 onClick={logout}
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-400 transition-colors"
+                className="w-full flex items-center justify-center space-x-2 px-4 py-2 rounded-lg bg-red-500/80 hover:bg-red-600 transition-colors font-medium text-sm"
               >
                 <LogOut className="h-4 w-4" />
-                <span className="text-sm">Logout</span>
+                <span>Logout</span>
               </button>
             </div>
           </div>
